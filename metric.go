@@ -40,6 +40,8 @@ type metric struct {
 	submittedTasks uint64
 }
 
+func NewMetric() Metric { return &metric{} }
+
 func (m *metric) IncBusyWorker() {
 	atomic.AddInt64(&m.busyWorkers, 1)
 }
