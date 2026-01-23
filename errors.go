@@ -3,8 +3,15 @@ package jobq
 import "errors"
 
 var (
-	ErrNoTaskInQueue      = errors.New("\x1b[31mjobq ::\x1b[0m no task in queue")
-	ErrQueueHasBeenClosed = errors.New("\x1b[31mjobq ::\x1b[0m queue has been closed")
-	ErrMaxCapacity        = errors.New("\x1b[31mjobq ::\x1b[0m max capacity reached")
-	ErrQueueShutdown      = errors.New("\x1b[31mjobq ::\x1b[0m queue has been closed and released")
+	ErrNoTaskInQueue      = errors.New("no task in queue")
+	ErrQueueHasBeenClosed = errors.New("queue has been closed")
+	ErrMaxCapacity        = errors.New("max capacity reached")
+
+	// ErrQueueShutdown is returned when an operation is performed
+	// on a queue that has already been shutdown and released.
+	ErrQueueShutdown = errors.New("queue has been closed and released")
+
+	// ErrMissingWorker is returned when a queue is created without
+	// a worker implementation
+	ErrMissingWorker = errors.New("missing worker module")
 )

@@ -52,17 +52,17 @@ func (m *Message) Bytes() []byte {
 }
 
 // NewMessage create a new message
-func NewMessage(m work.QueuedMessage, opts ...AllowOption) Message {
+func NewMessage(msg work.QueuedMessage, opts ...AllowOption) Message {
 	o := NewOptions(opts...)
 
 	return Message{
 		RetryCount:  o.retryCount,
 		RetryDelay:  o.retryDelay,
 		RetryFactor: o.retryFactor,
+		Body:        msg.Bytes(),
+		Timeout:     o.timeout,
 		RetryMin:    o.retryMin,
 		RetryMax:    o.retryMax,
-		Body:        m.Bytes(),
-		Timeout:     o.timeout,
 	}
 }
 
