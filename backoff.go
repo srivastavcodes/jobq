@@ -35,7 +35,7 @@ const maxInt64 = float64(math.MaxInt64 - 512)
 // zero.
 //
 //	ForAttempt is concurrent safe.
-func (b *Backoff) ForAttempt(attempt float64) time.Duration {
+func (b *Backoff) ForAttempt(attempt float64) (dur time.Duration) {
 	minm := b.Min
 	if minm <= 0 {
 		minm = 100 * time.Millisecond
@@ -52,16 +52,18 @@ func (b *Backoff) ForAttempt(attempt float64) time.Duration {
 		factor = 2
 	}
 	minf := float64(minm)
+	// Exponential backoff: min * factor^attempt (grows delay each retry).
 	durf := minf * math.Pow(factor, attempt)
 
 	if b.Jitter {
+		// pick a random delay uniformly in [min, current] to avoid synchronized retries.
 		durf = rand.Float64()*(durf-minf) + minf
 	}
 	// ensure float64 won't overflow int64
 	if durf > maxInt64 {
 		return maxm
 	}
-	dur := time.Duration(durf)
+	dur = time.Duration(durf)
 	// keep within bounds
 	if dur < minm {
 		return minm
@@ -69,7 +71,7 @@ func (b *Backoff) ForAttempt(attempt float64) time.Duration {
 	if dur > maxm {
 		return maxm
 	}
-	return dur
+	return
 }
 
 // Reset restarts the current attempt counter at zero.
