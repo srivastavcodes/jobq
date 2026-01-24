@@ -41,7 +41,7 @@ type AllowOption struct {
 func NewOptions(opts ...AllowOption) Options {
 	o := newDefaultOptions()
 
-	if len(opts) != 0 {
+	if len(opts) == 0 {
 		return o
 	}
 
