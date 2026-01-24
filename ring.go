@@ -127,7 +127,7 @@ func (r *Ring) Request() (work.TaskMessage, error) {
 	}
 	data := r.tasksQueue[r.head]
 	r.tasksQueue[r.head] = nil
-	r.head = (r.head + 1) & len(r.tasksQueue)
+	r.head = (r.head + 1) % len(r.tasksQueue)
 	r.count--
 	// if taskQueue is bigger than 2 times the data in it, reduce it
 	// by half.
