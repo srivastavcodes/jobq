@@ -37,7 +37,7 @@ func WithWorkerCount(num int64) Option {
 		if num <= 0 {
 			num = defaultWorkers
 		}
-		o.workerCount = num
+		o.maxWorkerCount = num
 	})
 }
 
@@ -92,26 +92,26 @@ func WithRetryInterval(d time.Duration) Option {
 
 // Options for custom args in Queue.
 type Options struct {
-	workerCount   int64
-	logger        Logger
-	queueSize     int
-	worker        work.Worker
-	fn            JobFn
-	afterFn       func()
-	metric        Metric
-	retryInterval time.Duration
+	maxWorkerCount int64
+	logger         Logger
+	queueSize      int
+	worker         work.Worker
+	fn             JobFn
+	afterFn        func()
+	metric         Metric
+	retryInterval  time.Duration
 }
 
 // NewOptions initialize the default value for the options
 func NewOptions(opts ...Option) *Options {
 	options := &Options{
-		workerCount:   defaultWorkers,
-		queueSize:     defaultCapacity,
-		logger:        defaultNewLogger,
-		worker:        nil,
-		fn:            defaultFn,
-		metric:        defaultMetric,
-		retryInterval: time.Second,
+		maxWorkerCount: defaultWorkers,
+		queueSize:      defaultCapacity,
+		logger:         defaultNewLogger,
+		worker:         nil,
+		fn:             defaultFn,
+		metric:         defaultMetric,
+		retryInterval:  time.Second,
 	}
 	for _, o := range opts {
 		o.apply(options)

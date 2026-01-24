@@ -12,7 +12,7 @@ type TaskFunc func(ctx context.Context) error
 
 // Message describes a task and its metadata.
 type Message struct {
-	Task TaskFunc `json:"-"`
+	TaskFunc TaskFunc `json:"-"`
 
 	// Timeout is the duration for which the task can be processed by the handler.
 	Timeout time.Duration `json:"timeout"`
@@ -71,7 +71,7 @@ func NewTask(task TaskFunc, opts ...AllowOption) Message {
 
 	return Message{
 		Timeout:     o.timeout,
-		Task:        task,
+		TaskFunc:    task,
 		RetryCount:  o.retryCount,
 		RetryDelay:  o.retryDelay,
 		RetryFactor: o.retryFactor,
