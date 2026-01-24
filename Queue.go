@@ -117,7 +117,7 @@ func (q *Queue) UpdateWorkerCount(count int64) {
 	q.mu.Lock()
 	q.maxWorkerCount = count
 	q.mu.Unlock()
-	q.schedule()
+	q.signalWorker()
 }
 
 // BusyWorkers returns the number of workers currently processing jobs.
@@ -161,7 +161,7 @@ func (q *Queue) work(task work.TaskMessage) {
 		if recErr != nil {
 			q.logger.Errorf("")
 		}
-		q.schedule()
+		q.signalWorker()
 
 		// update success or failure metric based on execution results.
 		if err == nil && recErr == nil {
@@ -178,9 +178,9 @@ func (q *Queue) work(task work.TaskMessage) {
 	}
 }
 
-// schedule checks if more workers can be started based on the current busy
+// signalWorker checks if more workers can be started based on the current busy
 // count. If so, it signals readiness to start a new worker.
-func (q *Queue) schedule() {
+func (q *Queue) signalWorker() {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
@@ -289,56 +289,49 @@ func (q *Queue) handle(msg *job.Message) error {
 // - If a task is available, it is sent to be processed by a new goroutine.
 // - The loop exists when the quit channel is closed.
 func (q *Queue) start() {
-	var (
-		taskch = make(chan work.TaskMessage, 1)
-		ticker = time.Tick(q.retryInterval)
-	)
+	ticker := time.NewTicker(q.retryInterval)
+	defer ticker.Stop()
 	for {
 		// ensure the number of busy workers does not exceed the configured
 		// worker count.
-		q.schedule()
+		q.signalWorker()
 		select {
 		case <-q.ready: // wait for a worker slot to become available.
 		case <-q.quit:
 			return
 		}
-		// request the task from the worker in a background goroutine.
-		q.rg.Run(func() {
-			for {
-				task, err := q.worker.Request()
-				if task == nil || err != nil {
-					select {
-					case <-q.quit:
-						if !errors.Is(err, ErrNoTaskInQueue) {
-							close(taskch)
-							return
-						}
-					case <-ticker:
-					case <-q.notify:
-					}
-				}
-				if task != nil {
-					taskch <- task
-					return
-				}
-				select {
-				case <-q.quit:
-					if !errors.Is(err, ErrNoTaskInQueue) {
-						close(taskch)
-						return
-					}
-				default:
-				}
+		task, err := q.requestTaskWithRetry(ticker.C)
+		if err != nil {
+			q.signalWorker()
+			if errors.Is(err, context.Canceled) {
+				return
 			}
-		})
-		task, ok := <-taskch
-		if !ok {
-			return
+			continue
 		}
 		// start processing the new task in a separate goroutine
 		q.metric.IncBusyWorker()
 		q.rg.Run(func() {
 			q.work(task)
 		})
+	}
+}
+
+// requestTaskWithRetry attempts to get a task, retrying on an empty queue.
+func (q *Queue) requestTaskWithRetry(ticker <-chan time.Time) (work.TaskMessage, error) {
+	for {
+		task, err := q.worker.Request()
+		if task != nil {
+			return task, err
+		}
+		// permanent error
+		if err != nil && !errors.Is(err, ErrNoTaskInQueue) {
+			return nil, err
+		}
+		select {
+		case <-q.quit:
+			return nil, context.Canceled
+		case <-ticker: // retry
+		case <-q.notify: // new task might be available
+		}
 	}
 }
