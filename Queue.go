@@ -52,6 +52,18 @@ func NewQueue(opts ...Option) (*Queue, error) {
 	return q, nil
 }
 
+// Start launches all worker goroutines and begins processing jobs.
+// If worker count is zero, Start is a no-op.
+func (q *Queue) Start() {
+	q.mu.Lock()
+	defer q.mu.Unlock()
+
+	if q.maxWorkerCount == 0 {
+		return
+	}
+	q.rg.Run(func() { q.start() })
+}
+
 // EnQueue enqueues a single job (work.QueuedMessage) into the queue.
 // Accepts job options for customizations.
 func (q *Queue) EnQueue(msg work.QueuedMessage, opts ...job.AllowOption) error {
