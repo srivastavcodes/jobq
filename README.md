@@ -72,7 +72,10 @@ func usingMessageType() {
 		wc  = make(chan int64)
 		res = make(chan string, num)
 	)
-	queue := jobq.NewPool(5, jobq.WithFn(func(ctx context.Context, msg work.TaskMessage) error {
+	queue := jobq.NewPool(
+			5,
+			jobq.WithFn(func(ctx context.Context, msg work.TaskMessage
+		) error {
 		var val job
 		if err := json.Unmarshal(msg.Payload(), &val); err != nil {
 			return err
