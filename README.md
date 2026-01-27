@@ -74,7 +74,7 @@ func usingMessageType() {
 	)
 	queue := jobq.NewPool(
 			5,
-			jobq.WithFn(func(ctx context.Context, msg work.TaskMessage
+			jobq.WithFn(func(ctx context.Context, msg work.TaskMessage)),
 		) error {
 		var val job
 		if err := json.Unmarshal(msg.Payload(), &val); err != nil {
