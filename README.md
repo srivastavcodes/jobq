@@ -1,7 +1,5 @@
 # JobQ
 
-***
-
 JobQ is a small, in-memory job queue written in Go. It's built to be simple, predictable, and easy to reason about.
 
 The core idea behind it is - submit jobs, run them with a fixed number of worker, support retries and timeouts, and shutdown
@@ -11,8 +9,6 @@ cleanly.
 
 ## Features
 
-***
-
 - In memory queue (ring buffer).
    - Although it uses an interface internally, so the implementation can be swapped out.
 - Worker metrics (submitted, running, success, failures).
@@ -21,8 +17,6 @@ cleanly.
 - Job retries with backoff and jitter.
 
 ## Usage
-
-***
 
 ### Using the Task Function
 
@@ -107,8 +101,6 @@ func usingMessageType() {
 ```
 
 ## How it works (on a high level)
-
-***
 
 - Jobs are submitted to the `Queue`, either as a message or a function.
 - A worker pool pulls tasks from an internal buffer.
