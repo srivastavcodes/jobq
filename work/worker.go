@@ -14,8 +14,8 @@ type Worker interface {
 	// It returns an error if the shutdown process fails.
 	Shutdown() error
 
-	// EnQueue adds a task to the work's queue. Errors, if it cannot enqueue.
-	EnQueue(task TaskMessage) error
+	// Submit adds a task to the work's queue. Errors, if it cannot enqueue.
+	Submit(task TaskMessage) error
 
 	// Request retrieves a task from the work's queue. It returns the
 	// queued message or errors if failed.

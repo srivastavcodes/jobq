@@ -77,9 +77,9 @@ func (r *Ring) Shutdown() error {
 	return nil
 }
 
-// EnQueue adds a task to the ring buffer queue. It returns an error if the queue
+// Submit adds a task to the ring buffer queue. It returns an error if the queue
 // has shutdown or has reached its maximum capacity.
-func (r *Ring) EnQueue(task work.TaskMessage) error {
+func (r *Ring) Submit(task work.TaskMessage) error {
 	// check if the queue is shutdown
 	if r.stopFlag.Load() {
 		return ErrQueueShutdown

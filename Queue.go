@@ -84,7 +84,7 @@ func (q *Queue) queue(msg *job.Message) error {
 	if q.stopFlag.Load() {
 		return ErrQueueShutdown
 	}
-	if err := q.worker.EnQueue(msg); err != nil {
+	if err := q.worker.Submit(msg); err != nil {
 		return err
 	}
 	q.metric.IncSubmittedTasks()
